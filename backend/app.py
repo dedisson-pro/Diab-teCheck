@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from twilio.twiml.messaging_response import MessagingResponse
 import os, json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +16,7 @@ if os.path.exists(_env_path):
 from model_service import predict_diabetes, get_features
 from ai_agent import analyze_risk, chat_with_agent
 from database import init_db, save_prediction, get_all_predictions, get_stats
+from whatsapp_bot import handle_message
 FRONTEND_DIR = os.path.join(BASE_DIR, "../frontend")
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
@@ -80,6 +82,16 @@ def stats():
     return jsonify(get_stats())
 
 # ── FRONTEND ─────────────────────────────────────────────────
+# ── WHATSAPP BOT ─────────────────────────────────────────────
+@app.route("/whatsapp", methods=["POST"])
+def whatsapp_webhook():
+    phone = request.form.get("From", "unknown")
+    message = request.form.get("Body", "")
+    reply = handle_message(phone, message)
+    resp = MessagingResponse()
+    resp.message(reply)
+    return str(resp), 200, {"Content-Type": "text/xml"}
+
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")

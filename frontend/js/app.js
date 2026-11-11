@@ -2,6 +2,18 @@ const API = "/api";
 let currentContext = {};
 let chatHistory   = [];
 
+// ── ICÔNES SVG ────────────────────────────────────────────────
+const IC = {
+  pulse:  '<svg class="ic" aria-hidden="true"><use href="#ic-pulse"/></svg>',
+  search: '<svg class="ic" aria-hidden="true"><use href="#ic-search"/></svg>',
+  chart:  '<svg class="ic" aria-hidden="true"><use href="#ic-chart"/></svg>',
+  check:  '<svg class="ic" aria-hidden="true"><use href="#ic-check"/></svg>',
+  bulb:   '<svg class="ic" aria-hidden="true"><use href="#ic-bulb"/></svg>',
+  alert:  '<svg class="ic" aria-hidden="true"><use href="#ic-alert"/></svg>',
+  hist:   '<svg class="ic" aria-hidden="true"><use href="#ic-history"/></svg>',
+  dash:   '<svg class="ic" aria-hidden="true"><use href="#ic-dashboard"/></svg>',
+};
+
 // ── TABS ──────────────────────────────────────────────────────
 document.querySelectorAll(".tab").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -22,7 +34,7 @@ document.getElementById("predictForm").addEventListener("submit", async e => {
   const btn = document.getElementById("btnPredict");
   const txt = document.getElementById("btnTxt");
   btn.disabled = true;
-  txt.textContent = "⏳ Analyse en cours…";
+  txt.innerHTML = '<span style="opacity:.7">Analyse en cours…</span>';
 
   const form = new FormData(e.target);
   const body = {};
@@ -45,7 +57,7 @@ document.getElementById("predictForm").addEventListener("submit", async e => {
     alert("Erreur de connexion au serveur.");
   } finally {
     btn.disabled = false;
-    txt.textContent = "🔍 Analyser le risque";
+    txt.innerHTML = IC.search + " Analyser le risque";
   }
 });
 
@@ -66,7 +78,9 @@ function renderResult(data) {
 
   // Badge résultat
   const badge = document.getElementById("predBadge");
-  badge.textContent = risk ? "⚠️ " + pred.prediction : "✅ " + pred.prediction;
+  badge.innerHTML = risk
+    ? IC.alert + " " + escapeHtml(pred.prediction)
+    : IC.check + " " + escapeHtml(pred.prediction);
   badge.className = "pred-badge " + (risk ? (pct >= 70 ? "risk" : "medium") : "ok");
 
   // Listes
@@ -78,15 +92,15 @@ function renderResult(data) {
   const urg = document.getElementById("urgenceBox");
   const urgVal = (anal.urgence_consultation || "").toLowerCase();
   if (urgVal === "oui") {
-    urg.textContent = "🚨 Consultation médicale urgente recommandée";
+    urg.innerHTML = IC.alert + " Consultation médicale urgente recommandée";
     urg.className = "urgence-box urgence-oui";
     urg.classList.remove("hidden");
   } else if (urgVal === "non") {
-    urg.textContent = "✅ Pas de consultation urgente requise";
+    urg.innerHTML = IC.check + " Pas de consultation urgente requise";
     urg.className = "urgence-box urgence-non";
     urg.classList.remove("hidden");
   } else {
-    urg.textContent = "💡 Une consultation médicale est à envisager";
+    urg.innerHTML = IC.bulb + " Une consultation médicale est à envisager";
     urg.className = "urgence-box urgence-envisager";
     urg.classList.remove("hidden");
   }
@@ -96,12 +110,12 @@ function renderResult(data) {
 
   // Reset chat
   document.getElementById("chatBox").innerHTML =
-    `<div class="chat-msg ai">🩺 ${anal.resume || "Analyse disponible ci-dessus."}</div>`;
+    `<div class="chat-msg ai">${IC.pulse} ${escapeHtml(anal.resume || "Analyse disponible ci-dessus.")}</div>`;
 }
 
 function renderList(id, items) {
   const ul = document.getElementById(id);
-  ul.innerHTML = items.map(i => `<li>${i}</li>`).join("") || "<li>Aucun élément</li>";
+  ul.innerHTML = items.map(i => `<li>${escapeHtml(i)}</li>`).join("") || "<li>Aucun élément</li>";
 }
 
 // ── CHAT ──────────────────────────────────────────────────────
@@ -148,11 +162,11 @@ async function loadHistory() {
     list.innerHTML = preds.map(p => `
       <div class="history-item">
         <div>
-          <div class="h-name">👤 Âge ${p.age || "?"} ans — Glucose ${p.glucose || "?"} mg/dL — IMC ${p.bmi || "?"}</div>
+          <div class="h-name">Âge ${p.age || "?"} ans &mdash; Glucose ${p.glucose || "?"} mg/dL &mdash; IMC ${p.bmi || "?"}</div>
           <div class="h-date">${new Date(p.created_at).toLocaleString("fr-FR")}</div>
         </div>
         <div class="h-badge ${p.is_at_risk ? 'risk' : 'ok'}">
-          ${p.is_at_risk ? "⚠️ " : "✅ "}${p.risk_probability || "?"}% — ${p.risk_level || "?"}
+          ${p.is_at_risk ? IC.alert : IC.check}${escapeHtml(String(p.risk_probability || "?"))}% &mdash; ${escapeHtml(p.risk_level || "?")}
         </div>
       </div>`).join("");
   } catch { list.innerHTML = "<p style='color:red'>Erreur de chargement.</p>"; }
@@ -166,11 +180,11 @@ async function loadDashboard() {
     const resp  = await fetch(`${API}/stats`);
     const stats = await resp.json();
     grid.innerHTML = [
-      { icon: "🩺", val: stats.total,          lbl: "Prédictions totales" },
-      { icon: "⚠️", val: stats.at_risk,         lbl: "Patients à risque" },
-      { icon: "✅", val: stats.not_at_risk,     lbl: "Pas de risque" },
-      { icon: "📊", val: stats.avg_risk_pct+"%",lbl: "Risque moyen" },
-      { icon: "🔬", val: stats.avg_glucose,     lbl: "Glucose moyen (mg/dL)" },
+      { icon: IC.pulse, val: stats.total,           lbl: "Prédictions totales" },
+      { icon: IC.alert, val: stats.at_risk,          lbl: "Patients à risque" },
+      { icon: IC.check, val: stats.not_at_risk,      lbl: "Pas de risque" },
+      { icon: IC.chart, val: (stats.avg_risk_pct||0)+"%", lbl: "Risque moyen" },
+      { icon: IC.search, val: stats.avg_glucose,     lbl: "Glucose moyen (mg/dL)" },
     ].map(s => `
       <div class="stat-card">
         <div class="stat-icon">${s.icon}</div>
@@ -181,5 +195,5 @@ async function loadDashboard() {
 }
 
 function escapeHtml(str) {
-  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }

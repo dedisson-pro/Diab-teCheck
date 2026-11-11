@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DiabèteCheck — Prédiction IA du Risque</title>
+  <meta name="theme-color" content="#1565C0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="DiabèteCheck">
+  <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="css/style.css">
   <style>
     .ic { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.25em; flex-shrink: 0; }
@@ -214,5 +220,10 @@
   </div>
 
   <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>

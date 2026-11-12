@@ -144,7 +144,7 @@ async function sendChat() {
     const data = await resp.json();
     const reply = data.reply || "Désolé, je n'ai pas pu répondre.";
     chatHistory.push({ role: "assistant", content: reply });
-    box.innerHTML += `<div class="chat-msg ai">${escapeHtml(reply)}</div>`;
+    box.innerHTML += `<div class="chat-msg ai">${formatReply(reply)}</div>`;
     box.scrollTop = box.scrollHeight;
   } catch {
     box.innerHTML += `<div class="chat-msg ai">Erreur de connexion à l'agent IA.</div>`;
@@ -196,4 +196,14 @@ async function loadDashboard() {
 
 function escapeHtml(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Le texte est échappé avant toute mise en forme : seules nos propres balises sont insérées.
+function formatReply(str) {
+  return escapeHtml(str)
+    .replace(/^#{1,6}\s*(.+)$/gm, "<strong>$1</strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^\s*[*-]\s+/gm, "• ")
+    .replace(/\*(\S[^*\n]*?)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
 }

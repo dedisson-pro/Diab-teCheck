@@ -32,7 +32,7 @@ Données patient :
 - Âge : {patient.get('Age')} ans
 - Glucose : {patient.get('Glucose')} mg/dL
 - IMC : {patient.get('BMI')}
-- Pression artérielle : {patient.get('BloodPressure')} mm Hg
+- Pression artérielle diastolique : {patient.get('BloodPressure')} mm Hg (valeur normale : 60 à 80 mm Hg)
 - Insuline : {patient.get('Insulin')} µU/mL
 - Grossesses : {patient.get('Pregnancies')}
 

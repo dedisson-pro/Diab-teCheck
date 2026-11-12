@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diabetecheck-v1';
+const CACHE_NAME = 'diabetecheck-v2';
 const STATIC_ASSETS = [
   '/',
   '/css/style.css',
